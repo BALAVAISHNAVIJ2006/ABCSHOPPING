@@ -1,6 +1,11 @@
 <?php
 session_start();
 
+// Redirect to adminhome.php if user_id is 2
+if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] == 2) {
+    header("Location: adminhome.php");
+    exit();
+}
 // Database connection
 $host = "localhost";
 $dbname = "candy";
@@ -10,7 +15,6 @@ $conn = new mysqli($host, $user, $pass, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-
 // Initialize variables for username and email
 $username = isset($_SESSION["username"]) ? $_SESSION["username"] : null;
 $email = null;
@@ -28,13 +32,10 @@ if (isset($_SESSION["user_id"])) {
     }
     $stmt->close();
 }
-
 $conn->close();
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -55,6 +56,9 @@ $conn->close();
             background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
             color: #333;
             overflow-x: hidden;
+            min-height: 100vh; /* Ensure body takes full viewport height */
+            display: flex;
+            flex-direction: column;
         }
 
         .navbar {
@@ -119,12 +123,12 @@ $conn->close();
             font-size: 14px;
             color: #333;
             display: flex;
-            flex-direction: column; /* Stack username and email vertically */
+            flex-direction: column;
             align-items: flex-start;
-            max-width: 150px; /* Limit width to prevent overflow */
-            white-space: nowrap; /* Prevent text wrapping */
-            overflow: hidden; /* Hide overflow */
-            text-overflow: ellipsis; /* Add ellipsis for long text */
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             font-weight: 500;
         }
 
@@ -138,17 +142,16 @@ $conn->close();
             color: #666;
         }
 
-        /* Style for logout button with red color */
         .navbar .nav-links a[href="logout.php"] {
-            background-color: #ff4d4d; /* Red background */
-            color: #fff; /* White text for contrast */
+            background-color: #ff4d4d;
+            color: #fff;
             padding: 5px 10px;
             border-radius: 5px;
             transition: background-color 0.3s ease;
         }
 
         .navbar .nav-links a[href="logout.php"]:hover {
-            background-color: #e60000; /* Darker red on hover */
+            background-color: #e60000;
         }
 
         .hero-section {
@@ -161,6 +164,7 @@ $conn->close();
             background: url('https://images.unsplash.com/photo-1445205170230-053b83016050?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;
             position: relative;
             margin-top: 70px;
+            flex: 1 0 auto; /* Allow hero to grow but not shrink */
         }
 
         .hero-section::before {
@@ -252,21 +256,36 @@ $conn->close();
         }
 
         .footer {
-            background: #333;
-            color: white;
-            padding: 20px;
+            background: linear-gradient(135deg, #333, #4a4a4a);
+            color: #ecf0f1;
+            padding: 30px 20px;
             text-align: center;
+            width: 100%;
+            flex-shrink: 0; /* Prevent footer from shrinking */
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer p {
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .footer .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
         }
 
         .footer a {
             color: #ff4d4d;
             text-decoration: none;
-            margin: 0 10px;
             font-weight: 600;
+            transition: color 0.3s ease;
         }
 
         .footer a:hover {
-            text-decoration: underline;
+            color: #e60000;
         }
 
         @media (max-width: 768px) {
@@ -291,7 +310,7 @@ $conn->close();
 
             .user-info {
                 margin: 5px 0;
-                max-width: 120px; /* Adjusted for smaller screens */
+                max-width: 120px;
             }
 
             .hero-content h1 {
@@ -315,6 +334,14 @@ $conn->close();
             .category-card {
                 max-width: 250px;
             }
+
+            .footer {
+                padding: 20px 15px;
+            }
+
+            .footer .footer-links {
+                gap: 15px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -323,12 +350,24 @@ $conn->close();
             }
 
             .user-info {
-                max-width: 100px; /* Further reduced for very small screens */
+                max-width: 100px;
                 font-size: 12px;
             }
 
             .user-info small {
                 font-size: 10px;
+            }
+
+            .footer {
+                padding: 15px 10px;
+            }
+
+            .footer .footer-links {
+                gap: 10px;
+            }
+
+            .footer p {
+                font-size: 12px;
             }
         }
     </style>
@@ -347,11 +386,9 @@ $conn->close();
                 <span><?php echo htmlspecialchars($username); ?></span>
                 <small><?php echo htmlspecialchars($email); ?></small>
             </div>
-            <!-- Sign Out Button with red color -->
             <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
     </nav>
-
     <section class="hero-section">
         <div class="hero-content">
             <h1>Welcome to ABC Shopping</h1>
@@ -375,12 +412,13 @@ $conn->close();
 
     <footer class="footer">
         <p>© 2025 ABC Shopping. All rights reserved.</p>
-        <p>
+        <div class="footer-links">
             <a href="#privacy">Privacy Policy</a>
             <a href="#terms">Terms of Service</a>
             <a href="contactus.php">Contact Us</a>
-        </p>
+        </div>
     </footer>
+
     <script>
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
